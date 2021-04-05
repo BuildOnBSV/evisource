@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <title>Evisource</title>
+</head>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css"
+    integrity="sha256-yMjaV542P+q1RnH6XByCPDfUFhmOafWbeLPmqKh11zo=" crossorigin="anonymous" />
+
+<style>
+    body.modal-open {
+        overflow: visible;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+    }
+</style>
+
+<body class="bg-light">
+
+    <div class="container">
+        <div class="py-5 text-center">
+            <!-- <img class="d-block mx-auto mb-4" src="https://getbootstrap.com/docs/4.0/assets/brand/bootstrap-solid.svg"
+                alt="" width="72" height="72"> -->
+            <h2>Evisource</h2>
+            <p class="lead">Hyperflexible attestations for your scrypt contracts.</p>
+        </div>
+
+        <div class="row">
+            <!-- <div class="col-md-4 order-md-2 mb-4">
+                <h4 class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Your cart</span>
+                    <span class="badge badge-secondary badge-pill">3</span>
+                </h4>
+                <ul class="list-group mb-3">
+                    <li class="list-group-item d-flex justify-content-between lh-condensed">
+                        <div>
+                            <h6 class="my-0">Product name</h6>
+                            <small class="text-muted">Brief description</small>
+                        </div>
+                        <span class="text-muted">$12</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between lh-condensed">
+                        <div>
+                            <h6 class="my-0">Second product</h6>
+                            <small class="text-muted">Brief description</small>
+                        </div>
+                        <span class="text-muted">$8</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between lh-condensed">
+                        <div>
+                            <h6 class="my-0">Third item</h6>
+                            <small class="text-muted">Brief description</small>
+                        </div>
+                        <span class="text-muted">$5</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Total (USD)</span>
+                        <strong>$20</strong>
+                    </li>
+                </ul>
+
+            </div> -->
+            <div class="col-md-8 order-md-1 mx-auto">
+                <h4 class="mb-3">Attestation details</h4>
+                <form class="needs-validation" novalidate>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="apiURL">API Url</label>
+                            <input type="text" class="form-control" id="apiURL" placeholder=""
+                                value="https://api.coinpaprika.com/v1/tickers/bsv-bitcoin-sv?quotes=USD" required>
+                            <div class="invalid-feedback">
+                                Valid api URL is required.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="username">API Position</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="apiPosition" required value="quotes.USD.price">
+                            <div class="invalid-feedback" style="width: 100%;">
+                                Invalid api position. Please use JSON "dot" object notation.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="apiURL">Starting time</label>
+                            <div class='input-group date' id="startTime">
+                                <input type="text" class="form-control" id="startingTime" placeholder="" required>
+                                <span class="input-group-addon">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </span>
+                                <!-- <div class="invalid-feedback">
+                                    Valid starting time is required.
+                                </div> -->
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="apiURL">Ending time</label>
+                            <div class='input-group date' id="endTime">
+                                <input type="text" class="form-control" id="endingTime" placeholder="" required>
+                                <span class="input-group-addon">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </span>
+                                <!-- <div class="invalid-feedback">
+                                    Valid starting time is required.
+                                </div> -->
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- <hr class="mb-4"> -->
+                    <!-- <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="same-address">
+                        <label class="custom-control-label" for="same-address">Shipping address is the same as my
+                            billing address</label>
+                    </div>
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="save-info">
+                        <label class="custom-control-label" for="save-info">Save this information for next time</label>
+                    </div> -->
+                    <hr class="mb-4">
+
+                    <h4 class="mb-3">Equivalence</h4>
+
+                    <div class="d-block my-3">
+                        <div class="custom-control custom-radio">
+                            <input id="rangeValue" name="acceptMethod" type="radio" class="custom-control-input" checked
+                                required>
+                            <label class="custom-control-label" for="rangeValue">Accept a range</label>
+                        </div>
+                        <div class="custom-control custom-radio">
+                            <input id="equalValue" name="acceptMethod" type="radio" class="custom-control-input"
+                                required>
+                            <label class="custom-control-label" for="equalValue">Accept a single value</label>
+                        </div>
+                    </div>
+                    <div class="row" id="valueRange">
+                        <div class="col-md-6 mb-3">
+                            <label for="cc-name">Minimum Value</label>
+                            <input type="text" class="form-control" id="minValue" value="200" required>
+                            <div class="invalid-feedback">
+                                Minimum value is required
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="cc-number">Maxmium Value</label>
+                            <input type="text" class="form-control" id="maxValue" value="300" required>
+                            <div class="invalid-feedback">
+                                Maximum value is required
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" id="valueEqual" style="display: none;">
+                        <div class="col-md-12 mb-3">
+                            <label for="cc-name">Must equal this value</label>
+                            <input type="text" class="form-control" id="equals" placeholder="" required>
+                            <div class="invalid-feedback">
+                                Equal value is required
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="mb-4">
+
+                </form>
+                <button class="btn btn-primary btn-lg btn-block" id="submission">Get signature</button>
+            </div>
+        </div>
+
+        <footer class="my-5 pt-5 text-muted text-center text-small">
+            <p class="mb-2">&copy; 2021 Evisource</p>
+
+            <ul class="list-inline">
+                <!-- <li class="list-inline-item"><a href="#">Privacy</a></li>
+                <li class="list-inline-item"><a href="#">Terms</a></li> -->
+                <li class="list-inline-item"><a href="#">Support</a></li>
+            </ul>
+
+        </footer>
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered " role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title" id="exampleModalLabel">Results</h3>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" style="overflow-wrap: break-word;overflow:scroll;max-height:30vh;">
+                    </div>
+                    <div id="button-here" class="ml-3 mb-3"></div>
+                    <div class="modal-footer">
+
+
+                        <!-- <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button> -->
+                        <button type="button close" class="btn btn-primary" onclick="closeModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Bootstrap core JavaScript
+        ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <!-- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
+    -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"
+        integrity="sha256-4iQZ6BVL4qNKlQ27TExEhBN1HFPvAvAMbFavKKosSWQ=" crossorigin="anonymous"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"
+        integrity="sha256-5YmaxAwMjIpMrVlK84Y/+NjCpKnFYa8bWWBbUHSBGfU=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/js/all.js"
+        integrity="sha256-2JRzNxMJiS0aHOJjG+liqsEOuBb6++9cY4dSOyiijX4=" crossorigin="anonymous"></script>
+
+    <script src="https://www.moneybutton.com/moneybutton.js"></script>
+    <script>
+        // Example starter JavaScript for disabling form submissions if there are invalid fields
+
+        $(function () {
+            $('#startTime').datetimepicker();
+            $('#endTime').datetimepicker();
+
+        });
+        $("#equalValue").change(function () {
+            if (this.checked) {
+                $("#minValue").val("")
+                $("#maxValue").val("")
+                $("#valueRange").fadeOut(200, function () {
+                    $("#valueEqual").fadeIn(200)
+                })
+            }
+        });
+        $("#rangeValue").change(function () {
+            if (this.checked) {
+                $("#equals").val("")
+                $("#valueEqual").fadeOut(200, function () {
+                    $("#valueRange").fadeIn(200)
+                })
+            }
+        });
+        $("#submission").click(function () {
+            submitForm()
+        })
+        function isEmpty(str) {
+            return !str.trim().length;
+        }
+        function submitForm() {
+            var now = new Date().setHours(0, 0, 0, 0);
+            var apiURL = $("#apiURL").val();
+            var apiPosition = $("#apiPosition").val();
+            try {
+                var startingTime = $('#startTime').data('DateTimePicker').date().unix() * 1000;
+                var endingTime = $('#endTime').data('DateTimePicker').date().unix() * 1000;
+            } catch (err) {
+                errorAlert('Invalid date range selected.')
+                return;
+            }
+            if ($("#equalValue").prop("checked")) {
+                var isEqual = true
+            } else {
+                var isEqual = false
+            }
+            var minValue = $("#minValue").val();
+            var maxValue = $("#maxValue").val();
+            var equalValue = $("#equals").val();
+
+            if (isEmpty(apiURL)) {
+                errorAlert('API URL is required.')
+                return;
+            } else if (isEmpty(apiPosition)) {
+                errorAlert('API position is required.')
+                return;
+            } else if (startingTime < now) {
+                errorAlert('Starting time must greater than the current time.')
+                return;
+            } else if (endingTime < startingTime + 3600000) {
+                errorAlert('Ending time must be greater than the starting time.')
+                return;
+            } else if (!isEqual && isEmpty(minValue)) {
+                errorAlert('Minimum value is required.')
+                return;
+            } else if (!isEqual && isEmpty(maxValue)) {
+                errorAlert('Maximum value is required.')
+                return;
+            } else if (isEqual && isEmpty(equalValue)) {
+                errorAlert('A value is required.')
+                return;
+            }
+
+
+
+            var data = {
+                type: "apiEval",
+                apiURL: apiURL,
+                apiPosition: apiPosition,
+                timeMin: startingTime,
+                timeMax: endingTime,
+                evalMin: minValue,
+                evalMax: maxValue,
+                evalEqual: equalValue
+            }
+            $("#exampleModal").find('.modal-body').text(JSON.stringify(data))
+            $("#exampleModal").modal('show')
+            showMB(data)
+            console.log(data)
+        }
+
+        function errorAlert(msg) {
+            alert(msg)
+        }
+        function closeModal() {
+            $("#exampleModal").modal('hide')
+        }
+
+        function toHex(str) {
+            try {
+                hex = unescape(encodeURIComponent(str))
+                    .split('').map(function (v) {
+                        return v.charCodeAt(0).toString(16)
+                    }).join('')
+            } catch (e) {
+                hex = str
+                console.log('invalid text input: ' + str)
+            }
+            return hex
+        }
+
+        function showMB(obj) {
+
+            var hex = $('#message').data('hex');
+            $("#button-here").show()
+            let div = document.getElementById('button-here');
+            var what = {
+                type: "apiEval",
+                apiURL: "https://api.coinpaprika.com/v1/tickers/bsv-bitcoin-sv?quotes=USD",
+                apiPosition: "quotes.USD.price",
+                evalEqual: "",
+                evalMin: "170",
+                evalMax: "300",
+                timeMin: "1614547712390",
+                timeMax: "1714548712390"
+            }
+            var parts = [toHex('evisource'), toHex('contract'), toHex(JSON.stringify(obj)), toHex('akondelin@moneybutton.com'), toHex(1614547712390)]
+
+            moneyButton.render(div, {
+                label: 'Test me!',
+                outputs: [{
+                    to: '18BHeQaPvBG1ESQFTpKLYPaFqx9KqNFFtj',
+                    amount: '0.01',
+                    currency: 'USD'
+                },
+                {
+                    script: 'OP_FALSE OP_RETURN ' + parts.join(' '),
+                    amount: '0',
+                    currency: 'USD'
+                }
+                ],
+                onPayment: function (payment) {
+                    console.log('onPayment', payment)
+                    setTimeout(function () {
+                        postTx(payment.txid)
+                    }, 2000)
+                },
+            })
+        }
+        function postTx(txid) {
+            try {
+                fetch("https://wkhzy2xjkk.execute-api.us-east-1.amazonaws.com/prod/validate", {
+                    crossDomain: true,
+                    method: "post",
+                    headers: { 'Content-type': 'application/json; charset=utf-8' },
+                    body: JSON.stringify({ txid: txid })
+                })
+                    .then(res => res.json())
+                    .then((responseData) => {
+                        console.log(responseData)
+                        $("#button-here").hide()
+                        $("#exampleModal").find('.modal-body').text(JSON.stringify(responseData))
+                    });
+            } catch (err) {
+                console.log(err)
+            }
+        }
+    </script>
+
+</body>
+
+</html>

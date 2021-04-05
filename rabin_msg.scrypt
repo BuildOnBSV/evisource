@@ -1,0 +1,60 @@
+/**
+A simple Bitcoin escrow contract
+An amount X is locked with a transaction.
+We have three scenarios which can unlock the script.
+A: Alice, B: Bob, E: Escrow, P: Public Key
+Scenario 1: PA + PB
+Alice and Bob have to sign. There will be two new outputs (50/50).
+Scenario 2: PA + PE + Hash 1
+Alice and Escrow have to sign and use the secret 1. Alice gets the output.
+Scenario 3: PB + PE + Hash 2
+Bob and Escrow have to sign and use the secret 2. Bob gets the output.
+**/
+
+import "util.scrypt";
+
+contract RabinMsg {
+    Ripemd160 pubKeyHashA;
+    Ripemd160 pubKeyHashB;
+    int fee;
+    int nRabinA;
+    int nRabinB;
+    bytes msg;
+
+    function spend(int amount, SigHashPreimage txPreimage, Ripemd160 pubKeyHash) : bool {
+        bytes script = Util.buildPublicKeyHashScript(pubKeyHash);
+        bytes output = Util.buildOutput(script, amount - this.fee);
+
+        return (hash256(output) == Util.hashOutputs(txPreimage));
+    }
+
+    function hash(bytes x) : bytes {
+        // expand into 512 bit hash
+        bytes hx = sha256(x);
+        int idx = len(hx) / 2;
+        return sha256(hx[ : idx]) + sha256(hx[idx : ]);
+    }
+
+    public function unlock(SigHashPreimage txPreimage, int pubKey1, int sig1, bytes padding1) {
+
+        require(Tx.checkPreimage(txPreimage));
+        int amount = Util.value(txPreimage);
+
+        int h = Util.fromLEUnsigned(this.hash(this.msg + padding1));
+        require((sig1 * sig1) % pubKey1 == h % pubKey1);
+
+
+        if (pubKey1 == this.nRabinA) {
+            require(this.spend(amount, txPreimage, this.pubKeyHashA));
+
+        }
+        else if (pubKey1 == this.nRabinB) {
+            require(this.spend(amount, txPreimage, this.pubKeyHashB));
+
+        }
+        require(pubKey1 == this.nRabinA || pubKey1 == this.nRabinB);
+
+    }
+}
+
+
