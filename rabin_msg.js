@@ -13,7 +13,6 @@ const {
 
 const {
   loadDesc,
-  loadCompiled,
   createLockingTx,
   sendTx,
   showError,
@@ -80,7 +79,7 @@ const { privateKey } = require('../privateKey');
 
 
     // initialize contract
-    const Rabin_msg = buildContractClass(loadCompiled('rabin_msg_desc.json'));
+    const Rabin_msg = buildContractClass(loadDesc('rabin_msg_desc.json'));
     const rabin_msg = new Rabin_msg(new Ripemd160(toHex(publicKeyHashA)), new Ripemd160(toHex(publicKeyHashB)), fee, nRabin, nRabin1, msgBytes);
 
     // deploy contract on testnet

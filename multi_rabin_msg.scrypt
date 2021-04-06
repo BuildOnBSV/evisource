@@ -1,14 +1,7 @@
 /**
-A simple Bitcoin escrow contract
-An amount X is locked with a transaction.
-We have three scenarios which can unlock the script.
-A: Alice, B: Bob, E: Escrow, P: Public Key
-Scenario 1: PA + PB
-Alice and Bob have to sign. There will be two new outputs (50/50).
-Scenario 2: PA + PE + Hash 1
-Alice and Escrow have to sign and use the secret 1. Alice gets the output.
-Scenario 3: PB + PE + Hash 2
-Bob and Escrow have to sign and use the secret 2. Bob gets the output.
+Multiple rabin signatures for a given message are required to unlock funds
+if A and B are supplied, the funds will be distributed to address A
+if C and D are supplied, the funds will be distributed to address B
 **/
 
 import "util.scrypt";
