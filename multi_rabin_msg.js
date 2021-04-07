@@ -13,7 +13,6 @@
   
   const {
     loadDesc,
-    loadCompiled,
     createLockingTx,
     sendTx,
     showError,
