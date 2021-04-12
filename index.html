@@ -385,18 +385,16 @@
                 onPayment: function (payment) {
                     console.log('onPayment', payment)
                     setTimeout(function () {
-                        postTx(payment.txid)
+                        getTx(payment.txid)
                     }, 2000)
                 },
             })
         }
-        function postTx(txid) {
+        function getTx(txid) {
             try {
-                fetch("https://wkhzy2xjkk.execute-api.us-east-1.amazonaws.com/prod/validate", {
+                fetch("https://api.evisource.com/verify/" + txid, {
                     crossDomain: true,
-                    method: "post",
-                    headers: { 'Content-type': 'application/json; charset=utf-8' },
-                    body: JSON.stringify({ txid: txid })
+                    method: "get"
                 })
                     .then(res => res.json())
                     .then((responseData) => {

@@ -1,0 +1,162 @@
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: An AWS Serverless Specification for an Evisource compatible signatory service.
+Parameters:
+  domainName:
+    Type: String
+    Default: example.mydomain.com
+  certificateArn:
+    Type: String
+    Default: ACM certificate ARN  
+  pInt:
+    Type: String
+    Default: pInt
+  qInt:
+    Type: String
+    Default: qInt
+  pInt1:
+    Type: String
+    Default: pInt1
+  qInt1:
+    Type: String
+    Default: qInt1
+  profitAddress:
+    Type: String
+    Default: Profit BSV address
+
+Resources:
+  myDomainName:
+    Type: 'AWS::ApiGateway::DomainName'
+    Properties:
+      CertificateArn: !Ref certificateArn
+      DomainName: !Ref domainName
+  myMapping:
+    Type: 'AWS::ApiGateway::BasePathMapping'
+    Properties:
+      Stage: dev
+      DomainName: !Ref myDomainName
+      RestApiId: !Ref apiGateway
+  apiGateway:
+    Type: "AWS::ApiGateway::RestApi"
+    Properties:
+      Name: "my-api"
+      Description: "My API"
+      EndpointConfiguration:
+        Types:
+          - EDGE
+
+  Resource: 
+    Type: AWS::ApiGateway::Resource
+    Properties: 
+      RestApiId: 
+        Ref: "apiGateway"
+      ParentId: 
+        Fn::GetAtt: 
+          - "apiGateway"
+          - "RootResourceId"
+      PathPart: "{proxy+}"
+
+  ProxyMethod:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: ANY
+      ResourceId: !Ref Resource
+      RestApiId: !Ref apiGateway
+      AuthorizationType: NONE
+      RequestParameters:
+        method.request.path.proxy: true
+      Integration:
+        CacheKeyParameters:
+          - 'method.request.path.proxy'
+        RequestParameters:
+          integration.request.path.proxy: 'method.request.path.proxy'
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Arn}/invocations
+          - Arn:
+              Fn::GetAtt:
+               - LambdaFunction
+               - Arn
+        PassthroughBehavior: WHEN_NO_MATCH
+        IntegrationResponses:
+          - StatusCode: 200 
+
+  apiGatewayDeployment:
+    Type: "AWS::ApiGateway::Deployment"
+    DependsOn:
+      - "ProxyMethod"
+    Properties:
+      RestApiId: !Ref "apiGateway"
+      StageName: "dev"
+
+
+
+  LambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: evisource-api1
+      Handler: index.handler
+      Role:
+        Fn::GetAtt:
+          - "LambdaExecutionRole"
+          - "Arn"
+      Code:
+        S3Bucket: "evisource.com"
+        S3Key: "lambda.zip"
+      Runtime: nodejs14.x
+      MemorySize: 128
+      Timeout: 5
+      Environment:
+        Variables:
+         ADDRESS: !Ref profitAddress
+         PINT: !Ref pInt
+         QINT: !Ref qInt
+         PINT1: !Ref pInt1
+         QINT1: !Ref qInt1
+
+  LambdaExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+
+  EvisourcePolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: "LambdaExecutionPolicy"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "CloudwatchPolicy"
+            Effect: "Allow"
+            Action:
+              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+            Resource: "*"
+          - Sid: "AssumeRolePolicy"
+            Effect: "Allow"
+            Action:
+              - 'sts:AssumeRole'
+            Resource: "*"
+
+      Roles:
+        - Ref: "LambdaExecutionRole"
+
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt 
+        - LambdaFunction
+        - Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${apiGateway}/*/*

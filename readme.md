@@ -48,11 +48,9 @@ Each transaction must send 600 BSV satoshis to 1CLC7REjofmoyUFTbVYbLBXD3rcfqWi6d
 OP_FALSE OP_RETURN evisource contract {type:"apiEval",apiURL:"https://api.coinpaprika.com/v1/tickers/bsv-bitcoin-sv?quotes=USD",apiPosition:"quotes.USD.price",timeMin:"1617659058000",timeMax:"1717659058000",evalMin:"200",evalMax:"300",evalEqual:""} akondelin@moneybutton.com 1614547712390
 ```
 ```
-fetch("https://api.evisource.com/verify", {
+fetch("https://api.evisource.com/verify/" + txid, {
 	crossDomain: true,
-	method: "post",
-	headers: { 'Content-type': 'application/json; charset=utf-8' },
-	body: JSON.stringify({txid:txid})
+	method: "get"
 })
 .then(res => res.json())
 .then((responseData) => {
