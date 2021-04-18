@@ -8,18 +8,18 @@ Parameters:
   certificateArn:
     Type: String
     Default: ACM certificate ARN  
-  PINT_TRUE: 
+  PINTTRUE: 
     Type: String
-    Default: PINT_TRUE
-  QINT_TRUE:
+    Default: PINTTRUE
+  QINTTRUE:
     Type: String
-    Default: QINT_TRUE
-  PINT_FALSE:
+    Default: QINTTRUE
+  PINTFALSE:
     Type: String
-    Default: PINT_FALSE
-  QINT_FALSE:
+    Default: PINTFALSE
+  QINTFALSE:
     Type: String
-    Default: QINT_FALSE
+    Default: QINTFALSE
   profitAddress:
     Type: String
     Default: Profit BSV address
@@ -110,10 +110,10 @@ Resources:
       Environment:
         Variables:
          ADDRESS: !Ref profitAddress
-         PINT: !Ref PINT_TRUE
-         QINT: !Ref QINT_TRUE
-         PINT1: !Ref PINT_FALSE
-         QINT1: !Ref QINT_FALSE
+         PINT: !Ref PINTTRUE
+         QINT: !Ref QINTTRUE
+         PINT1: !Ref PINTFALSE
+         QINT1: !Ref QINTFALSE
 
   LambdaExecutionRole:
     Type: "AWS::IAM::Role"
