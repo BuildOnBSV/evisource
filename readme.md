@@ -24,7 +24,8 @@ For example, one contract could require multiple data points to be true (logisti
 >We would advise you to choose your attesters wisely, as downtime on their behalf could result in an inability to claim a valid signature, and therefore funds. We also recommend that you build in a failsafe for occasional downtime. For example, you could require 2 of 3 attester signatures rather than 2 out of a possible total of 2.
 
 ## Become an attester
-You can earn BSV by providing an endpoint which provides the inputs and outputs shown here: https://github.com/BuildOnBSV/evisource/blob/master/index.js. Make sure to publicly acknowledge your True and False Rabin public key set, as well as your profit address and minimum acceptable fee. While we don't charge a fee to attesters, we recommend they charge at least 560 satoshis for their services.
+You can earn BSV by providing an endpoint which provides the inputs and outputs shown here: https://github.com/BuildOnBSV/evisource/blob/master/index.js. Make sure to publicly acknowledge your True and False Rabin public key set, as well as your profit address and minimum acceptable fee. While we don't charge a fee to attesters, we recommend they charge at least 560 satoshis for their services. You can create the infrastructure with a single click here:
+[![Deploy stack](./cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=Evisource&templateURL=https://s3.amazonaws.com/evisource.com/template.yaml)
 
 ## About Evisource, the entity
 We intend to support any reasonable signature schema requested by third party developers! Please let us know if we can provide signatures using a different encryption algorithm, or a different signature schema.
