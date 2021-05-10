@@ -121,11 +121,7 @@ function privKeyToPubKey(p, q) {
 function generatePrivKey() {
     // Get a seed value from a random buffer and convert it to a BigInt
     let seed = crypto.randomBytes(2048);
-    console.log(seed)
-    var myhash = crypto.createHash('sha256').update('hi').digest('hex');
-    var myhash1 = crypto.createHash('sha256').update('yo').digest('hex');
-    // console.log(myhash.hashCode())
-    return generatePrivKeyFromSeed(myhash + myhash1);
+    return generatePrivKeyFromSeed(seed);
 }
 
 /**
