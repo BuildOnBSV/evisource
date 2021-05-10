@@ -1,23 +1,22 @@
 'use strict'
 const serverless = require('serverless-http');
 // const bodyParser = require("body-parser");
-// const { v4: uuidv4 } = require('uuid'); 
 const express = require('express');
 const crypto = require('crypto')
 const fetch = require("node-fetch");
-const { privKeyToPubKey, sign, verify } = require("rabinsig");
+const bsv = require("bsv")
+const Message = require('bsv/message')
+const Mnemonic = require('bsv/mnemonic')
+
+const { generatePrivKeyFromSeed,
+  privKeyToPubKey,
+  sign,
+  verify } = require("./rabin.js");
+// const { v4: uuidv4 } = require('uuid'); 
 const app = express();
 
 const AWS = require('aws-sdk');
 
-const rabinA = {
-  p: BigInt(process.env.PINT),
-  q: BigInt(process.env.QINT)
-}
-const rabinB = {
-  p: BigInt(process.env.PINT1),
-  q: BigInt(process.env.QINT1)
-}
 
 // app.use(express.urlencoded({ extended: true }));
 // app.use(express.json());
@@ -33,26 +32,88 @@ module.exports.handler = serverless(app);
 
 
 app.get('/keyset', async function (req, res) {
-  let nRabin = privKeyToPubKey(rabinA.p, rabinA.q);
-  let nRabin1 = privKeyToPubKey(rabinB.p, rabinB.q);
-
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  res.send({
-    statusCode: 200,
-    body: {
-      trueRabin: nRabin.toString(),
-      falseRabin: nRabin1.toString()
+  var mnemonic = Mnemonic.fromString(process.env.MNEMONIC)
+  var xpriv = mnemonic.toHDPrivateKey()
+  var keypairs = []
+  const derive = (xpriv, index) => {
+    let bip44 = "m/44'/0'/0'/0";
+    let next = bip44 + "/" + index
+    // let next = index
+    let xpriv2 = xpriv.deriveChild(next)
+    let xpub2 = bsv.HDPublicKey.fromHDPrivateKey(xpriv2)
+    let priv2 = xpriv2.privateKey;
+    let pub2 = xpriv2.publicKey;
+    let address2 = xpriv2.privateKey.toAddress();
+    // console.log(address2)
+    // console.log(priv2)
+    return {
+      id: index,
+      xpriv: xpriv2.toString(),
+      xpub: xpub2.toString(),
+      priv: priv2.toString(),
+      pub: pub2.toString(),
+      address: address2.toString()
     }
-  })
+  }
+  var count = 0
+  var n = 0
+  const generate = (xpriv) => {
+    console.log('generating')
+    for (let i = 0; i < 2; i++) {
+      count++
+      let key = derive(xpriv, n)
+      // console.log(`${bip44}/${i} ${key.address} '${buttonpage(key)}'`);
+      keypairs.push({ "address": key.address, "public": key.pub, "private": key.priv, "index": i })
+      if (count == 1) {
+        try {
+          var publicKey = bsv.PublicKey.fromString(key.pub)
+          var privateKey = bsv.PrivateKey.fromString(key.priv)
+          var address = bsv.Address.fromPublicKey(publicKey)
+          var message = Date.now().toString()
+          var sig = Message.sign(message, privateKey)
 
+          var verified = Message.verify(message, address, sig)
+
+
+          res.header('Access-Control-Allow-Origin', '*');
+          res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+          res.header('Access-Control-Allow-Headers', 'Content-Type');
+          res.send({
+            statusCode: 200,
+            body: {
+              keyInfo: {
+                xpub: key.xpub.toString(),
+                index: n,
+                pub: key.pub.toString(),
+                message: message,
+                signature: sig
+              },
+              version: '0.1.2',
+              minimumSatoshis: parseInt(process.env.FEE),
+              profitAddress: process.env.ADDRESS
+            }
+          })
+        } catch (err) {
+          console.log(err)
+          res.header('Access-Control-Allow-Origin', '*');
+          res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+          res.header('Access-Control-Allow-Headers', 'Content-Type');
+          res.send({
+            statusCode: 500,
+            body: { err: 'err' }
+          })
+        }
+      }
+    }
+  }
+  generate(xpriv)
 })
+
 app.get('/verify/:txid', async function (req, res) {
   let txid = req.params.txid;
   let address = process.env.ADDRESS
 
-  const fee = 600
+  const fee = parseInt(process.env.FEE)
 
 
   async function getOpReturn(txid) {
@@ -93,8 +154,39 @@ app.get('/verify/:txid', async function (req, res) {
       return result[key]
     }, obj);
   }
-  function whichKey(what, output) {
+  function whichKey(dataHex, output) {
+    var what = JSON.parse(Buffer.from(dataHex, 'hex').toString('utf8'));
     const now = Date.now()
+    const derive = (xpriv, index) => {
+      let bip44 = "m/44'/0'/0'/0";
+      let next = bip44 + "/" + index
+      // let next = index
+      let xpriv2 = xpriv.deriveChild(next)
+      let xpub2 = bsv.HDPublicKey.fromHDPrivateKey(xpriv2)
+      let priv2 = xpriv2.privateKey;
+      let pub2 = xpriv2.publicKey;
+      let address2 = xpriv2.privateKey.toAddress();
+      return {
+        id: index,
+        xpriv: xpriv2.toString(),
+        xpub: xpub2.toString(),
+        priv: priv2,
+        pub: pub2.toString(),
+        address: address2.toString()
+      }
+    }
+    var mnemonic = Mnemonic.fromString(process.env.MNEMONIC)
+    var xpriv = mnemonic.toHDPrivateKey()
+    let keyToUse = derive(xpriv, 0)
+
+    let msgHash = crypto.createHash('sha256').update(dataHex).digest('hex')
+    let msgHash1 = crypto.createHash('sha256').update(msgHash).digest('hex')
+
+    var sig = Message.sign(msgHash, keyToUse.priv)
+    var sig1 = Message.sign(msgHash1, keyToUse.priv)
+    let key = generatePrivKeyFromSeed(sig);
+    let key1 = generatePrivKeyFromSeed(sig1);
+
     // ensure all fields are present
     if (!('type' in what) || !('apiURL' in what) || !('apiPosition' in what) || !('evalEqual' in what) || !('evalMin' in what) || !('evalMax' in what) || !('timeMin' in what) || !('timeMax' in what)) {
       console.log(false)
@@ -105,26 +197,29 @@ app.get('/verify/:txid', async function (req, res) {
       console.log(false)
       return false;
     }
+
     if (now < parseInt(what.timeMin) || now > parseInt(what.timeMax)) {
-      console.log(now)
-      return false;
+      return { trueKey: key, falseKey: key1, valid: false }
+
     } else if (what.evalEqual != '') {
       if (output == what.eval) {
-        return { p: rabinA.p, q: rabinA.q, status: true }
+        return { p: key.p, q: key.q, status: true, valid: true, keyToUse: keyToUse, sig: sig }
       } else {
-        return { p: rabinB.p, q: rabinB.q, status: false }
+        return { p: key1.p, q: key1.q, status: false, valid: true, keyToUse: keyToUse, sig: sig1 }
       }
-
     } else {
       if (output > parseFloat(what.evalMin) && output < parseFloat(what.evalMax)) {
-        return { p: rabinA.p, q: rabinA.q, status: true }
+        return { p: key.p, q: key.q, status: true, valid: true, keyToUse: keyToUse, sig: sig }
+      } else if (output < parseFloat(what.evalMin) || output > parseFloat(what.evalMax)) {
+        return { p: key1.p, q: key1.q, status: false, valid: true, keyToUse: keyToUse, sig: sig1 }
       } else {
-        return { p: rabinB.p, q: rabinB.q, status: false }
+        return false
       }
     }
   }
   var input = await getOpReturn(txid)
   var parts = input.parts
+  var paid = input.paid
 
   var type = parts[1]
   var what = JSON.parse(parts[2])
@@ -134,40 +229,84 @@ app.get('/verify/:txid', async function (req, res) {
 
 
   var output = await getAPI(what)
-  var key = whichKey(what, output)
-  if (key) {
-    let nRabin = privKeyToPubKey(key.p, key.q);
-    // console.log("pubKey: " + nRabin);
-    console.log('msg:', JSON.stringify(what))
-    let dataHex = Buffer.from(JSON.stringify(what)).toString('hex');
-    let signatureResult = sign(dataHex, key.p, key.q, nRabin);
-    let result = verify(dataHex, signatureResult.paddingByteCount, signatureResult.signature, nRabin);
-    console.log({ verified: result })
-    var data = {
-      pubkey: nRabin.toString(),
-      signature: signatureResult.signature.toString(),
-      padding: signatureResult.paddingByteCount,
-      dataHex: dataHex,
-      dataUtf8: what,
-      attestation: key.status
+  var dataHex = Buffer.from(JSON.stringify(what)).toString('hex');
+  var key = whichKey(dataHex, output)
+  if (paid == true) {
+    if (key.valid == true) {
+      let nRabin = privKeyToPubKey(key.p, key.q);
+      console.log('msg:', JSON.stringify(what))
 
+      let signatureResult = sign(dataHex, key.p, key.q, nRabin);
+      let result = verify(dataHex, signatureResult.paddingByteCount, signatureResult.signature, nRabin);
+      console.log({ verified: result })
+      var data = {
+        rabinInfo: {
+          rabinPubkey: nRabin.toString(),
+          signature: signatureResult.signature.toString(),
+          padding: signatureResult.paddingByteCount,
+          dataHex: dataHex,
+          dataUtf8: what,
+          attestation: key.status
+        },
+        keyInfo: {
+          xpub: key.keyToUse.xpub,
+          index: key.keyToUse.id,
+          pub: key.keyToUse.pub,
+          message: dataHex,
+          signature: key.sig
+        }
+      }
+
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+      res.header('Access-Control-Allow-Headers', 'Content-Type');
+      res.send({
+        statusCode: 200,
+        body: data
+      })
+    } else if (key.valid == false) {
+      let nRabin = privKeyToPubKey(key.trueKey.p, key.trueKey.q);
+      let nRabin1 = privKeyToPubKey(key.falseKey.p, key.falseKey.q);
+      let dataHex = Buffer.from(JSON.stringify(what)).toString('hex');
+
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+      res.header('Access-Control-Allow-Headers', 'Content-Type');
+      res.send({
+        statusCode: 200,
+        body: {
+          msg: 'Outside of time constraints.',
+          trueRabinPubkey: nRabin.toString(),
+          falseRabinPubkey: nRabin1.toString(),
+          dataHex: dataHex,
+          dataUtf8: what
+
+        }
+      })
+    } else {
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+      res.header('Access-Control-Allow-Headers', 'Content-Type');
+      res.send({
+        statusCode: 200,
+        body: {
+          msg: 'Invalid format. Sufficient payment.'
+
+        }
+      })
     }
-
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    res.send({
-      statusCode: 200,
-      body: data
-    })
-
   } else {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type');
     res.send({
       statusCode: 200,
-      body: { error: 'Outside time constraints.' }
+      body: {
+        msg: 'Insufficient payment',
+        minimumSatoshis: parseInt(process.env.FEE),
+        profitAddress: process.env.ADDRESS
+
+      }
     })
   }
 

@@ -25,6 +25,7 @@ For example, one contract could require multiple data points to be true (logisti
 
 ## Become an attester
 You can earn BSV by providing an endpoint which provides the inputs and outputs shown here: https://github.com/BuildOnBSV/evisource/blob/master/index.js. Make sure to publicly acknowledge your True and False Rabin public key set, as well as your profit address and minimum acceptable fee. While we don't charge a fee to attesters, we recommend they charge at least 560 satoshis for their services. You can create the infrastructure with a single click here:
+
 [![Deploy stack](./cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=Evisource&templateURL=https://s3.amazonaws.com/evisource.com/template.yaml)
 
 ## About Evisource, the entity
