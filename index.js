@@ -12,7 +12,6 @@ const { generatePrivKeyFromSeed,
   privKeyToPubKey,
   sign,
   verify } = require("./rabin.js");
-// const { v4: uuidv4 } = require('uuid'); 
 const app = express();
 
 const AWS = require('aws-sdk');
@@ -62,7 +61,6 @@ app.get('/keyset', async function (req, res) {
     for (let i = 0; i < 2; i++) {
       count++
       let key = derive(xpriv, n)
-      // console.log(`${bip44}/${i} ${key.address} '${buttonpage(key)}'`);
       keypairs.push({ "address": key.address, "public": key.pub, "private": key.priv, "index": i })
       if (count == 1) {
         try {

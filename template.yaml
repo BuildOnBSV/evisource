@@ -8,18 +8,12 @@ Parameters:
   certificateArn:
     Type: String
     Default: ACM certificate ARN  
-  PINTTRUE: 
+  seedPhrase:
     Type: String
-    Default: PINTTRUE
-  QINTTRUE:
+    Default: Seed phrase for signatures
+  minimumFee:
     Type: String
-    Default: QINTTRUE
-  PINTFALSE:
-    Type: String
-    Default: PINTFALSE
-  QINTFALSE:
-    Type: String
-    Default: QINTFALSE
+    Default: Minimun fee measured in satoshis
   profitAddress:
     Type: String
     Default: Profit BSV address
@@ -103,17 +97,15 @@ Resources:
           - "Arn"
       Code:
         S3Bucket: "evisource.com"
-        S3Key: "lambda.zip"
+        S3Key: "lambda3.zip"
       Runtime: nodejs14.x
       MemorySize: 128
-      Timeout: 5
+      Timeout: 15
       Environment:
         Variables:
          ADDRESS: !Ref profitAddress
-         PINT: !Ref PINTTRUE
-         QINT: !Ref QINTTRUE
-         PINT1: !Ref PINTFALSE
-         QINT1: !Ref QINTFALSE
+         FEE: !Ref minimumFee
+         MNEMONIC: !Ref seedPhrase
 
   LambdaExecutionRole:
     Type: "AWS::IAM::Role"

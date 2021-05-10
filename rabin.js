@@ -11,9 +11,9 @@ let crypto;
 try {
     crypto = require('crypto');
 } catch (err) {
-    throw('Error: crypto support is disabled!');
+    throw ('Error: crypto support is disabled!');
 }
-    
+
 function greatestCommonDivisor(a, b) {
     if ((typeof a !== 'bigint') || (typeof b !== 'bigint'))
         throw "Error: Incorrect argument(s) to greatestCommonDivisor()";
@@ -108,9 +108,9 @@ function root(dataBuffer, p, q, nRabin) {
  * @param {BigInt} q Key private key 'q' part
  * @returns {BigInt} Key nRabin (public key) = p * q
  */
-function privKeyToPubKey(p,q){
-    if(typeof(p) !== 'bigint' || typeof(q) !== 'bigint')
-        throw("Error: Key parts (p,q) should be BigInts (denoted by trailing 'n').")
+function privKeyToPubKey(p, q) {
+    if (typeof (p) !== 'bigint' || typeof (q) !== 'bigint')
+        throw ("Error: Key parts (p,q) should be BigInts (denoted by trailing 'n').")
     return p * q;
 }
 
@@ -122,8 +122,8 @@ function generatePrivKey() {
     // Get a seed value from a random buffer and convert it to a BigInt
     let seed = crypto.randomBytes(2048);
     console.log(seed)
-    var myhash  = crypto.createHash('sha256').update('hi').digest('hex');
-    var myhash1  = crypto.createHash('sha256').update('yo').digest('hex');
+    var myhash = crypto.createHash('sha256').update('hi').digest('hex');
+    var myhash1 = crypto.createHash('sha256').update('yo').digest('hex');
     // console.log(myhash.hashCode())
     return generatePrivKeyFromSeed(myhash + myhash1);
 }
@@ -134,12 +134,12 @@ function generatePrivKey() {
  * @returns {JSON} {'p': BigInt,'q': BigInt}
  */
 function generatePrivKeyFromSeed(seed) {
-  let p = getPrimeNumber(rabinHashBytes(seed.toString('hex')) % ((2n ** 501n) + 1n));
-  let q = getPrimeNumber(rabinHashBytes(seed.toString('hex') + '00') % ((2n ** 501n) + 1n));
-  return {
-      "p": p,
-      "q": q
-  };
+    let p = getPrimeNumber(rabinHashBytes(seed.toString('hex')) % ((2n ** 501n) + 1n));
+    let q = getPrimeNumber(rabinHashBytes(seed.toString('hex') + '00') % ((2n ** 501n) + 1n));
+    return {
+        "p": p,
+        "q": q
+    };
 }
 
 /**
@@ -157,8 +157,8 @@ function sign(dataHex, p, q, nRabin) {
     // Remove 0x from data if necessary
     dataHex = dataHex.replace('0x', '');
     // Check key parts are correct values
-    if(typeof(p) !== 'bigint' || typeof(q) !== 'bigint' || typeof(nRabin) !== 'bigint')
-        throw("Error: Key parts (p,q) should be BigInts (denoted by trailing 'n').")
+    if (typeof (p) !== 'bigint' || typeof (q) !== 'bigint' || typeof (nRabin) !== 'bigint')
+        throw ("Error: Key parts (p,q) should be BigInts (denoted by trailing 'n').")
     return root(Buffer.from(dataHex, 'hex'), p, q, nRabin);
 }
 
@@ -177,14 +177,14 @@ function verify(dataHex, paddingByteCount, signature, nRabin) {
     // Remove 0x from data if necessary
     dataHex = dataHex.replace('0x', '');
     // Ensure padding count is a number
-    if(typeof paddingByteCount !== 'number')
+    if (typeof paddingByteCount !== 'number')
         throw ("Error: paddingByteCount should be a number");
     // Check if signature is a BigInt
-    if(typeof(signature) !== 'bigint')
-    throw("Error: Signature should be a BigInt (denoted by trailing 'n').");
+    if (typeof (signature) !== 'bigint')
+        throw ("Error: Signature should be a BigInt (denoted by trailing 'n').");
     // Check if nRabin is a BigInt
-    if(typeof(nRabin) !== 'bigint')
-        throw("Error: Public Key nRabin should be a BigInt (denoted by trailing 'n').");
+    if (typeof (nRabin) !== 'bigint')
+        throw ("Error: Public Key nRabin should be a BigInt (denoted by trailing 'n').");
 
     let dataBuffer = Buffer.from(dataHex, 'hex');
     let paddingBuffer = Buffer.from('00'.repeat(paddingByteCount), 'hex');
