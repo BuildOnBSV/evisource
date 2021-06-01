@@ -311,3 +311,93 @@ app.get('/verify/:txid', async function (req, res) {
 
 });
 
+
+
+app.get('/timestamp', async function (req, res) {
+
+
+  function whichKey(dataHex) {
+    const derive = (xpriv, index) => {
+      let bip44 = "m/44'/0'/0'/0";
+      let next = bip44 + "/" + index
+      let xpriv2 = xpriv.deriveChild(next)
+      let xpub2 = bsv.HDPublicKey.fromHDPrivateKey(xpriv2)
+      let priv2 = xpriv2.privateKey;
+      let pub2 = xpriv2.publicKey;
+      let address2 = xpriv2.privateKey.toAddress();
+      return {
+        id: index,
+        xpriv: xpriv2.toString(),
+        xpub: xpub2.toString(),
+        priv: priv2,
+        pub: pub2.toString(),
+        address: address2.toString()
+      }
+    }
+    var mnemonic = Mnemonic.fromString(process.env.MNEMONIC)
+    var xpriv = mnemonic.toHDPrivateKey()
+    let keyToUse = derive(xpriv, 0)
+
+    let msgHash = crypto.createHash('sha256').update(dataHex).digest('hex')
+
+    var sig = Message.sign(msgHash, keyToUse.priv)
+    let key = generatePrivKeyFromSeed(sig);
+
+    return { p: key.p, q: key.q, status: true, valid: true, keyToUse: keyToUse, sig: sig }
+
+  }
+
+  const now = Date.now().toString()
+  var dataHex = Buffer.from('timestamp').toString('hex');
+  var timeHex = Buffer.from(now).toString('hex');
+  var key = whichKey(dataHex)
+  if (key.valid == true) {
+
+    let nRabin = privKeyToPubKey(key.p, key.q);
+    console.log('msg:', 'timestamp')
+
+    let signatureResult = sign(timeHex, key.p, key.q, nRabin);
+    let result = verify(timeHex, signatureResult.paddingByteCount, signatureResult.signature, nRabin);
+    console.log({ verified: result })
+    var data = {
+      rabinInfo: {
+        rabinPubkey: nRabin.toString(),
+        signature: signatureResult.signature.toString(),
+        padding: signatureResult.paddingByteCount,
+        dataHex: timeHex,
+        dataUtf8: now,
+        attestation: key.status
+      },
+      keyInfo: {
+        xpub: key.keyToUse.xpub,
+        index: key.keyToUse.id,
+        pub: key.keyToUse.pub,
+        message: dataHex,
+      }
+    }
+
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.send({
+      statusCode: 200,
+      body: data
+    })
+  } else {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.send({
+      statusCode: 200,
+      body: {
+        msg: 'Invalid format.'
+
+      }
+    })
+  }
+
+
+
+});
+
+
